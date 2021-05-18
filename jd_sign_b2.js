@@ -48,7 +48,7 @@ Date.prototype.Format = function (fmt) {
 
 function setupCookie(cookie) {
   let js_content = fs.readFileSync('./JD_DailyBonus.js', 'utf8')
-  js_content = js_content.replace(/var Key = '.*'/, `var Key = '${cookie}'`)
+  js_content = js_content.replace(/var Key = ''/, `var Key = '${cookie}'`)
   fs.writeFileSync('./JD_DailyBonus.js', js_content, 'utf8')
 }
 
@@ -153,25 +153,22 @@ async function jdsign(row,page){
   async (err)=>{
     console.log('登录失败：',err);
   });
-  await page.goto('https://m.jd.com/');
   cookies = await page.cookies(); 
   //row.cookies = JSON.stringify(cookies, null, '\t');
-  ck = toStringCookies(cookies);
-  fs.writeFileSync('./cookie.txt', ck, 'utf8')
+  fs.writeFileSync('./cookie.txt', toStringCookies(cookies), 'utf8')
   //console.log(cookies);
 
   //row.cookies = JSON.stringify(cookies, null, '\t'); 
   
   //console.log(ck);
-  //return row;
+  return row;
     // 2、替换cookie
-    setupCookie(ck);
-    //return row;
+    setupCookie(ck)
     // 3、执行脚本
     exec(`node JD_DailyBonus.js > result.txt`);
       // 4、发送推送
     sendNotificationIfNeed(row.pushkey);
-    fs.unlinkSync('./CookieSet.json');
+    //fs.unlinkSync('./CookieSet.json');
     fs.unlinkSync('./result.txt');
     console.log('jdsign return');
     return row; 

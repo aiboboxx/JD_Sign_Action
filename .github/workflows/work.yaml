@@ -15,6 +15,11 @@ on:
 env:
   JD_COOKIE: ${{ secrets.JD_COOKIE }}
   PUSH_KEY: ${{ secrets.PUSH_KEY }}
+  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+  MYSQL_USER: ${{ secrets.MYSQL_USER }}
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+  MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+  MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
   UPLOAD_BESULT_DIR: true
 
 jobs:

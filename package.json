@@ -17,7 +17,11 @@
   },
   "homepage": "https://github.com/ZHDeveloper/JD_Sign_Action#readme",
   "dependencies": {
+    "@actions/core": "^1.2.7",
+    "@actions/github": "^4.0.0",
     "download": "^8.0.0",
+    "mysql2": "^2.2.5",
+    "puppeteer": "^9.1.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6"
   }
