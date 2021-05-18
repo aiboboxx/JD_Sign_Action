@@ -45,7 +45,10 @@ Date.prototype.Format = function (fmt) {
   }
   return fmt;
 };
-
+// 京东脚本文件
+const js_url = 'https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js';
+// 下载脚本路劲
+const js_path = './JD_DailyBonus.js';
 function setupCookie(cookie) {
   let js_content = fs.readFileSync('./JD_DailyBonus.js', 'utf8')
   js_content = js_content.replace(/var Key = '.*'/, `var Key = '${cookie}'`)
@@ -103,6 +106,8 @@ async function main() {
         await dialog.dismiss();
     });
     await page.emulate(puppeteer.devices['iPhone 6']); 
+        // 1、下载脚本
+        download(js_url, './');
   console.log(`*****************开始京东签到 ${Date()}*******************\n`);  
   let sql = "SELECT * FROM jdsign WHERE Invalid is null  and endtime > NOW() limit 15;"
   //let sql = "SELECT * FROM freeok WHERE id>40 order by update_time asc limit 2;"
@@ -111,7 +116,7 @@ async function main() {
   console.log(`共有${r[0].length}个账户要签到`);
   for (let row of r[0]) {
     i++;
-    console.log("email:", row.email, row.pushkey);
+    console.log("email:", row.email);
     if (i % 3 == 0) await myfuns.Sleep(1000).then(()=>console.log('暂停1秒！'));
     if (row.cookies) await jdsign(row,page)
     .then(async row => {
@@ -130,14 +135,14 @@ async function main() {
   await pool.end();
 }
 async function jdsign(row,page){
-  let ck,cookies;
+  let ck='',cookies={};
   if (isJsonString(row.cookies)){
     cookies = JSON.parse(row.cookies);
-    ck = toStringCookies(cookies);
-    row.cookies = ck;
+    //ck = toStringCookies(cookies);
+    //row.cookies = ck;
   }else{
     cookies = toArrayCookies(row.cookies,'.jd.com');
-    ck = row.cookies;
+    //ck = row.cookies;
   }
   await page.setCookie(...cookies);
   await page.goto('https://bean.m.jd.com/');
@@ -155,14 +160,10 @@ async function jdsign(row,page){
   });
   await page.goto('https://m.jd.com/');
   cookies = await page.cookies(); 
-  //row.cookies = JSON.stringify(cookies, null, '\t');
+  row.cookies = JSON.stringify(cookies, null, '\t');
   ck = toStringCookies(cookies);
-  fs.writeFileSync('./cookie.txt', ck, 'utf8')
-  //console.log(cookies);
-
-  //row.cookies = JSON.stringify(cookies, null, '\t'); 
-  
-  //console.log(ck);
+  //fs.writeFileSync('./cookie.txt', ck, 'utf8')
+  //console.log(cookies,ck);
   //return row;
     // 2、替换cookie
     setupCookie(ck);
@@ -173,7 +174,7 @@ async function jdsign(row,page){
     sendNotificationIfNeed(row.pushkey);
     fs.unlinkSync('./CookieSet.json');
     fs.unlinkSync('./result.txt');
-    console.log('jdsign return');
+    //console.log('jdsign return');
     return row; 
 }
 const toArrayCookies =  (cookies_str,domain) => { 
