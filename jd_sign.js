@@ -12,8 +12,10 @@ const myfuns = require('./myfuns.js');
 const mysql = require('mysql2/promise');
 const puppeteer = require('puppeteer');
 const runId = github.context.runId;
-let browser;
-const setup  = JSON.parse(fs.readFileSync('./setup.json', 'utf8'))
+let browser,setup;
+if (!runId) {
+  setup  = JSON.parse(fs.readFileSync('./setup.json', 'utf8'));
+}
 const pool = mysql.createPool({
   host: runId?process.env.MYSQL_HOST:setup.mysql.host,
   user: runId?process.env.MYSQL_USER:setup.mysql.user,
@@ -109,8 +111,19 @@ async function main() {
         // 1、下载脚本
         download(js_url, './');
   console.log(`*****************开始京东签到 ${Date()}*******************\n`);  
-  let sql = "SELECT * FROM jdsign WHERE Invalid is null  and endtime > NOW() limit 15;"
+  //let sql = "SELECT * FROM jdsign WHERE Invalid is null and endtime > NOW() limit 20;"
   //let sql = "SELECT * FROM freeok WHERE id>40 order by update_time asc limit 2;"
+  let sql = 
+  `SELECT
+    *
+  FROM
+    jdsign 
+  WHERE
+    invalid IS NULL 
+    AND ( TO_DAYS( NOW()) > TO_DAYS( update_time ) OR update_time IS NULL )  
+  ORDER BY
+    update_time ASC 
+    LIMIT 20`;
   let r =  await pool.query(sql);
   let i = 0;
   console.log(`共有${r[0].length}个账户要签到`);
@@ -129,12 +142,25 @@ async function main() {
         await pool.query(sql)
         .then((reslut)=>{console.log('changedRows',reslut[0].changedRows);myfuns.Sleep(300);})
         .catch((error)=>{console.log('UPDATEerror: ', error.message);myfuns.Sleep(300);});
-      })
+      },
+      async err => {
+        console.log(err);    
+        let sql,arr;   
+          sql = 'UPDATE `jdsign` SET `invalid`=1,  `update_time` = NOW() WHERE `id` = ?';
+          arr = [row.id];
+          sql = await pool.format(sql,arr);
+          //console.log(sql);
+          await pool.query(sql)
+          .then((reslut)=>{console.log('changedRows',reslut[0].changedRows);myfuns.Sleep(300);})
+          .catch((error)=>{console.log('UPDATEerror: ', error.message);myfuns.Sleep(300);});
+        }
+      )
     .catch(error => console.log('signerror: ', error.message));
    }
   await pool.end();
 }
 async function jdsign(row,page){
+  await myfuns.clearBrowser(page); //clear all cookies
   let ck='',cookies={};
   if (isJsonString(row.cookies)){
     cookies = JSON.parse(row.cookies);
@@ -145,20 +171,26 @@ async function jdsign(row,page){
     //ck = row.cookies;
   }
   await page.setCookie(...cookies);
-  await page.goto('https://bean.m.jd.com/');
+  //await page.goto('https://bean.m.jd.com/');
   //return row; 
-  let selecter, inner_html;
-  selecter = '#hello > div > div > div.react-view.scroll-view.hide-vertical-indicator > div > div:nth-child(1) > div:nth-child(1) > div > div > div > div > div:nth-child(1) > div > div:nth-child(4) > div > div'; //退出
-  await page.waitForSelector(selecter,{timeout:10000})
+  await page.goto('https://home.m.jd.com/myJd/home.action');
+  let selecter = '';
+  selecter = '#jd_header_new_bar > div.jd-header-new-title'; 
+  await page.waitForFunction(
+    (selecter) => document.querySelector(selecter).innerText.includes("我的京东"),
+    {timeout:10000},
+    selecter
+  )
+  //await page.waitForSelector(selecter,{timeout:10000})
   .then(
     async ()=>{
     console.log('登录成功');
     await myfuns.Sleep(1000);
   },
   async (err)=>{
-    console.log('登录失败：',err);
+    //console.log('登录失败：',err);
+    return Promise.reject(new Error('登录失败'+err));
   });
-  await page.goto('https://m.jd.com/');
   cookies = await page.cookies(); 
   row.cookies = JSON.stringify(cookies, null, '\t');
   ck = toStringCookies(cookies);
