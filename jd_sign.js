@@ -158,6 +158,7 @@ async function main() {
     .catch(error => console.log('signerror: ', error.message));
    }
   await pool.end();
+  if ( runId?true:false ) await browser.close();
 }
 async function jdsign(row,page){
   await myfuns.clearBrowser(page); //clear all cookies
