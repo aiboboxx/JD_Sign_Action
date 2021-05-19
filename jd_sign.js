@@ -153,6 +153,7 @@ async function main() {
           await pool.query(sql)
           .then((reslut)=>{console.log('changedRows',reslut[0].changedRows);myfuns.Sleep(300);})
           .catch((error)=>{console.log('UPDATEerror: ', error.message);myfuns.Sleep(300);});
+
         }
       )
     .catch(error => console.log('signerror: ', error.message));
@@ -190,6 +191,8 @@ async function jdsign(row,page){
   },
   async (err)=>{
     //console.log('登录失败：',err);
+    fs.writeFileSync('./result.txt', 'cookie设置错误', 'utf8')
+    sendNotificationIfNeed(row.pushkey);
     return Promise.reject(new Error('登录失败'+err));
   });
   cookies = await page.cookies(); 
