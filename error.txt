@@ -1,1 +1,1 @@
-{"errno":1024,"errmsg":"bad pushtoken"}
+{"errno":1024,"errmsg":"不要重复发送同样的内容"}
