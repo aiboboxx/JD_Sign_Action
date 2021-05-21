@@ -12,8 +12,10 @@ const myfuns = require('./myfuns.js');
 const mysql = require('mysql2/promise');
 const puppeteer = require('puppeteer');
 const runId = github.context.runId;
-let browser;
-const setup  = JSON.parse(fs.readFileSync('./setup.json', 'utf8'))
+let browser,setup;
+if (!runId) {
+  setup  = JSON.parse(fs.readFileSync('./setup.json', 'utf8'));
+}
 const pool = mysql.createPool({
   host: runId?process.env.MYSQL_HOST:setup.mysql.host,
   user: runId?process.env.MYSQL_USER:setup.mysql.user,
@@ -45,10 +47,13 @@ Date.prototype.Format = function (fmt) {
   }
   return fmt;
 };
-
+// 京东脚本文件
+const js_url = 'https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js';
+// 下载脚本路劲
+const js_path = './JD_DailyBonus.js';
 function setupCookie(cookie) {
   let js_content = fs.readFileSync('./JD_DailyBonus.js', 'utf8')
-  js_content = js_content.replace(/var Key = ''/, `var Key = '${cookie}'`)
+  js_content = js_content.replace(/var Key = '.*'/, `var Key = '${cookie}'`)
   fs.writeFileSync('./JD_DailyBonus.js', js_content, 'utf8')
 }
 
@@ -97,23 +102,31 @@ async function main() {
     defaultViewport: null,
     ignoreHTTPSErrors: true
   });
-    const page = await browser.newPage();
-    page.on('dialog', async dialog => {
-        //console.info(`➞ ${dialog.message()}`);
-        await dialog.dismiss();
-    });
-    await page.emulate(puppeteer.devices['iPhone 6']); 
+
+        // 1、下载脚本
+        download(js_url, './');
   console.log(`*****************开始京东签到 ${Date()}*******************\n`);  
-  let sql = "SELECT * FROM jdsign WHERE Invalid is null  and endtime > NOW() limit 15;"
-  //let sql = "SELECT * FROM freeok WHERE id>40 order by update_time asc limit 2;"
+  //let sql = "SELECT * FROM jdsign WHERE invalid =1 and endtime > NOW() ORDER BY update_time ASC limit 3;"
+
+   let sql = 
+  `SELECT
+    *
+  FROM
+    jdsign 
+  WHERE
+    invalid IS NULL 
+    AND ( TO_DAYS( NOW()) > TO_DAYS( update_time ) OR update_time IS NULL )  
+  ORDER BY
+    update_time ASC 
+    LIMIT 1`;
   let r =  await pool.query(sql);
   let i = 0;
   console.log(`共有${r[0].length}个账户要签到`);
   for (let row of r[0]) {
     i++;
-    console.log("email:", row.email, row.pushkey);
+    console.log("email:",i, row.email);
     if (i % 3 == 0) await myfuns.Sleep(1000).then(()=>console.log('暂停1秒！'));
-    if (row.cookies) await jdsign(row,page)
+    if (row.cookies) await jdsign(row)
     .then(async row => {
       //console.log(JSON.stringify(row));    
       let sql,arr;   
@@ -122,28 +135,55 @@ async function main() {
         sql = await pool.format(sql,arr);
         //console.log(sql);
         await pool.query(sql)
-        .then((reslut)=>{console.log('changedRows',reslut[0].changedRows);myfuns.Sleep(300);})
-        .catch((error)=>{console.log('UPDATEerror: ', error.message);myfuns.Sleep(300);});
-      })
+        .then((reslut)=>{console.log('changedRows',reslut[0].changedRows);myfuns.Sleep(10000);})
+        .catch((error)=>{console.log('UPDATEerror: ', error.message);myfuns.Sleep(10000);});
+      },
+      async err => {
+        console.log(err);    
+        let sql,arr;   
+          sql = 'UPDATE `jdsign` SET `invalid`=1,  `update_time` = NOW() WHERE `id` = ?';
+          arr = [row.id];
+          sql = await pool.format(sql,arr);
+          //console.log(sql);
+          await pool.query(sql)
+          .then((reslut)=>{console.log('err-changedRows',reslut[0].changedRows);myfuns.Sleep(10000);})
+          .catch((error)=>{console.log('err-UPDATEerror: ', error.message);myfuns.Sleep(10000);});
+
+        }
+      )
     .catch(error => console.log('signerror: ', error.message));
    }
   await pool.end();
+  if ( runId?true:false ) await browser.close();
 }
-async function jdsign(row,page){
-  let ck,cookies;
+async function jdsign(row){
+  const page = await browser.newPage();
+  page.on('dialog', async dialog => {
+      //console.info(`➞ ${dialog.message()}`);
+      await dialog.dismiss();
+  });
+  await page.emulate(puppeteer.devices['iPhone 6']); 
+  let ck='',cookies={};
+  await myfuns.clearBrowser(page); //clear all cookies
   if (isJsonString(row.cookies)){
     cookies = JSON.parse(row.cookies);
-    ck = toStringCookies(cookies);
-    row.cookies = ck;
   }else{
     cookies = toArrayCookies(row.cookies,'.jd.com');
-    ck = row.cookies;
   }
-  await page.setCookie(...cookies);
-  await page.goto('https://bean.m.jd.com/');
+  //cookies = JSON.parse(row.cookies);
+  //console.log(JSON.stringify(cookies, null, '\t'));
+  await page.setCookie(...cookies)
+  .catch(err=>console.log('setcookie_err',err));
+  //await page.goto('https://bean.m.jd.com/');
   //return row; 
-  let selecter, inner_html;
-  selecter = '#hello > div > div > div.react-view.scroll-view.hide-vertical-indicator > div > div:nth-child(1) > div:nth-child(1) > div > div > div > div > div:nth-child(1) > div > div:nth-child(4) > div > div'; //退出
+  await page.goto('https://home.m.jd.com/myJd/home.action');
+  let selecter = '';
+  selecter = '#jd_header_new_bar > div.jd-header-new-title'; 
+/*   await page.waitForFunction(
+    (selecter) => document.querySelector(selecter).innerText.includes("我的京东"),
+    {timeout:10000},
+    selecter
+  ) */
   await page.waitForSelector(selecter,{timeout:10000})
   .then(
     async ()=>{
@@ -151,26 +191,29 @@ async function jdsign(row,page){
     await myfuns.Sleep(1000);
   },
   async (err)=>{
-    console.log('登录失败：',err);
+    //console.log('登录失败：',err);
+    fs.writeFileSync('./result.txt', 'cookie设置错误', 'utf8')
+    sendNotificationIfNeed(row.pushkey);
+    return Promise.reject(new Error('登录失败'+err));
   });
   cookies = await page.cookies(); 
-  //row.cookies = JSON.stringify(cookies, null, '\t');
-  fs.writeFileSync('./cookie.txt', toStringCookies(cookies), 'utf8')
-  //console.log(cookies);
-
-  //row.cookies = JSON.stringify(cookies, null, '\t'); 
-  
-  //console.log(ck);
-  return row;
+  row.cookies = JSON.stringify(cookies, null, '\t');
+  ck = toStringCookies(cookies);
+  //fs.writeFileSync('./cookie.txt', ck, 'utf8')
+  //console.log(cookies,ck);
+  //await page.deleteCookie(...cookies);
+  await page.close();
+  //return row;
     // 2、替换cookie
-    setupCookie(ck)
+    setupCookie(ck);
+    //return row;
     // 3、执行脚本
     exec(`node JD_DailyBonus.js > result.txt`);
       // 4、发送推送
     sendNotificationIfNeed(row.pushkey);
-    //fs.unlinkSync('./CookieSet.json');
+    fs.unlinkSync('./CookieSet.json');
     fs.unlinkSync('./result.txt');
-    console.log('jdsign return');
+    //console.log('jdsign return');
     return row; 
 }
 const toArrayCookies =  (cookies_str,domain) => { 
