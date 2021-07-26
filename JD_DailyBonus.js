@@ -15,7 +15,7 @@
 
 开启抓包app后, Safari浏览器登录 https://bean.m.jd.com/bean/signIndex.action 点击签到并且出现签到日历后, 返回抓包app搜索关键字 functionId=signBean 复制请求头Cookie填入以下Key处的单引号内即可 */
 
-var Key = 'mba_sid=16244146334574514831120360923.6;__jdb=122270672.6.16206362977321861115126|25.1624416734;sfstoken=tk01ma31b1c5aa8sMSsyeDJ4M1Vn/5jb+SB7U7rg+pugjbCVw3+Fkti8lnCsrysUcijP9/02XPmxJfLblK23HkfNOtou;unick=eroslp;jxsid_s_t=1624416734715;__jda=122270672.16206362977321861115126.1620636297.1624414633.1624416734.25;retina=1;warehistory="100017628668,";autoOpenApp_downCloseDate_auto=1623227610472_10800000;shshshsID=1ce876b3ac244bb56fd216d061986ffc_2_1624416735179;unpl=V2_ZzNtbUAFF0YmD08Ef00JBGIKEF9KUEdBdQpFBCxKCFBkChdeclRCFnUUR1NnGFQUZwQZWUtcRxNFCEVkeBhcAGQKGlRGXnMlRQtGZHsYbAVgABNaQFBAHXMORFd7EFsFZwMWXUFQcyVyCE9kS0kEVjlQTBQLZ0YVdAlDVHMZVAJXAiJfQ1ZBEncATl19KRdrZk4SWkFWRBdyC05SfRtfBW4EEl1CU0MWcjhHZHg%3d;jxsid=16244167340384015250;webp=1;__wga=1624416734361.1624416734361.1623227612102.1623227612102.1.2;jcap_dvzw_fp=wyyPxGr7zFKGlbTai77RETde5zv7670daU7xZ-d7rhxfVIFtKJ9O-pkrsc0J-6dFonCUXA==;TrackerID=8d2BF4zdS-Bz2kwyWFy3WC9rx2I7TNBF-1tOYcuJe3pE6DbKt01E3br6rjhCxtPqIxdVv_I8v1CNTqeFyo1A7gtKIGyovYQgnrpKRoz7oWs;sk_history=100017628668%2C;cid=9;wxa_level=1;shshshfpb=kL8iP%207xWhVYUyRLjJv%20qNg%3D%3D;sc_width=1536;RT="z=1&dm=jd.com&si=k400azhs07q&ss=kq8uj7zl&sl=3&tt=0&obo=3&ld=qs4&r=04c3342dad20a95ddec84f65c77a7469&ul=qs5&hd=qvn";pt_pin=aiboboxx;pt_token=f3to4h0z;pt_key=AAJg0pnLADCxMXQim05ctFnS1LYrCQvVO5-WlzgsaQlY4OedRz48nvvPPCgKaQtjT08j_Yg-Tkw;visitkey=27178936915880975;areaId=16;mobilev=html5;mba_muid=16206362977321861115126;TrackID=18OXvczmW1GTyel0u4u9kv7_NuyDL5GnlRjFtax1LRfuWGsqgEdB6_mZ7VcOfko9VphJkvgLSIeIV-ru_GxekNMQcBxjl20R40Euk4Qf5RLk;__jdc=122270672;3AB9D23F7A4B3C9B=JEQ7RXLCTYP4FE7OBZUFAIEA6TEAYBQRX7MVDVQTMSTVRYXZTWRSSJ6MVBXVC3WIIMZMUDEVNJNTGJE6MXAKLZ4O54;equipmentId=JEQ7RXLCTYP4FE7OBZUFAIEA6TEAYBQRX7MVDVQTMSTVRYXZTWRSSJ6MVBXVC3WIIMZMUDEVNJNTGJE6MXAKLZ4O54;pinId=4uduP1rWu6a1ffsfn98I-w;deviceVersion=91.0.4472.77;pwdt_id=aiboboxx;deviceOSVersion=;shshshfpa=453daccb-4a7e-b53d-d4f9-33a4da80acf7-1620971083;deviceName=Chrome;wqmnx1=MDEyNjM4NHMubW9vODhpIDtoMWUgZTYgIGNzMC9TMDM3YTVXRFUp;_tp=cJBfb5Z8eujXf1St8q7dTA%3D%3D;PPRD_P=UUID.16206362977321861115126;_pst=aiboboxx;shshshfp=763c176d2fa3bb7f5bed5d141b727d87;deviceOS=;pin=aiboboxx;ipLoc-djd=16-1303-3483-0;fingerprint=d04e16fd67fdbd28bcc6f592490df94d;__jdv=209449046%7Cwww.aiboboxx.ml%7Ct_2014289858_%7Ctuiguang%7C3cebb68a5ed04833965e132afbed2842%7C1623229140593;whwswswws=;jxsid_s_u=https%3A//home.m.jd.com/myJd/home.action;__jdu=16206362977321861115126'; //单引号内自行填写您抓取的Cookie
+var Key = ''; //单引号内自行填写您抓取的Cookie
 
 var DualKey = ''; //如需双账号签到,此处单引号内填写抓取的"账号2"Cookie, 否则请勿填写
 
@@ -136,6 +136,7 @@ async function all() {
         JDUserSignPre(stop, 'JD3C', '京东商城-数码', '4SWjnZSCTHPYjE5T7j35rxxuMTb6'), //京东数码电器馆
         JDUserSignPre(stop, 'JDWomen', '京东商城-女装', 'DpSh7ma8JV7QAxSE2gJNro8Q2h9'), //京东女装馆
         JDUserSignPre(stop, 'JDBook', '京东商城-图书', '3SC6rw5iBg66qrXPGmZMqFDwcyXi'), //京东图书
+        JDUserSignPre(stop,'JDJiaDian','京东商城-小家电馆','3uvPyw1pwHARGgndatCXddLNUxHw'), // 京东小家电
         JingRongDoll(stop, 'JTDouble', '京东金贴-双签', '1DF13833F7'), //京东金融 金贴双签
         // JingRongDoll(stop, 'XJDouble', '金融现金-双签', 'F68B2C3E71', '', '', '', 'xianjin') //京东金融 现金双签
       ]);
@@ -195,6 +196,7 @@ async function all() {
       // await JDUserSignPre(Wait(stop), 'JDLive', '京东智能-生活', 'KcfFqWvhb5hHtaQkS4SD1UU6RcQ'); //京东智能生活
       await JDUserSignPre(Wait(stop), 'JDClean', '京东商城-清洁', '2Tjm6ay1ZbZ3v7UbriTj6kHy9dn6'); //京东清洁馆
       await JDUserSignPre(Wait(stop), 'JDCare', '京东商城-个护', '2tZssTgnQsiUqhmg5ooLSHY9XSeN'); //京东个人护理馆
+      await JDUserSignPre(Wait(stop), 'JDJiaDian','京东商城-小家电馆','3uvPyw1pwHARGgndatCXddLNUxHw'); // 京东小家电馆
       // await JDUserSignPre(Wait(stop), 'JDJewels', '京东商城-珠宝', 'zHUHpTHNTaztSRfNBFNVZscyFZU'); //京东珠宝馆
       await JingRongDoll(Wait(stop), 'JDDouble', '金融京豆-双签', 'F68B2C3E71', '', '', '', 'jingdou'); //京东金融 京豆双签
       break;
