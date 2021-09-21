@@ -92,7 +92,7 @@ function main() {
     console.log('请配置京东cookie!'); return;
   }
 
-  setupCookie()
+  //setupCookie()
   // 3、执行脚本
   exec(`node '${js_path}' >> '${result_path}'`);
   // 4、发送推送
